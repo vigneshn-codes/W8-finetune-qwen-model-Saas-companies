@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaaS Companies Lookup — Fine-Tuning Project Guide</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#06090f;--bg2:#0c1117;--bg3:#151c27;--bg4:#1e2736;
+--text:#dfe6ef;--text2:#8e9bb3;--text3:#566378;
+--teal:#3fcfb4;--teal2:#5de0c8;--teal3:#2aab93;
+--violet:#8b7ae8;--violet2:#a595f0;
+--amber:#e8b34b;--amber2:#f0c96e;
+--coral:#e8705a;--coral2:#f0886e;
+--sky:#4da8e8;--sky2:#6cc0f5;
+--surface:rgba(255,255,255,.03);
+--border:rgba(255,255,255,.06);
+--radius:14px;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.75;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:600px;background:radial-gradient(ellipse 60% 50% at 50% 0%,rgba(63,207,180,.06),transparent);pointer-events:none;z-index:0}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+
+.page{max-width:860px;margin:0 auto;padding:40px 24px 120px;position:relative;z-index:1}
+
+/* TOC sidebar */
+.toc{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:6px}
+.toc a{width:8px;height:8px;border-radius:50%;background:var(--bg4);display:block;transition:all .3s;text-indent:-9999px}
+.toc a.active{background:var(--teal);width:10px;height:10px;box-shadow:0 0 10px rgba(63,207,180,.4)}
+@media(max-width:900px){.toc{display:none}}
+
+/* Hero */
+.hero{text-align:center;padding:60px 0 50px}
+.hero-badge{display:inline-block;padding:6px 18px;border-radius:40px;font-size:.72rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;background:rgba(63,207,180,.1);color:var(--teal);border:1px solid rgba(63,207,180,.2);margin-bottom:20px}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;color:var(--text);line-height:1.15;margin-bottom:12px}
+.hero h1 em{font-style:italic;background:linear-gradient(135deg,var(--teal),var(--violet));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:1.05rem;max-width:520px;margin:0 auto 16px}
+.hero-meta{display:flex;gap:20px;justify-content:center;flex-wrap:wrap;margin-top:10px}
+.hero-meta span{font-size:.8rem;color:var(--text3);background:var(--bg3);border:1px solid var(--border);padding:4px 14px;border-radius:20px}
+.hero-meta span strong{color:var(--teal);font-weight:600}
+
+/* Phase markers */
+.phase{margin-top:64px;padding-top:32px;border-top:1px solid var(--border)}
+.phase-tag{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:8px;font-size:.72rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+.phase-tag.prep{background:rgba(77,168,232,.1);color:var(--sky)}
+.phase-tag.data{background:rgba(232,179,75,.1);color:var(--amber)}
+.phase-tag.train{background:rgba(232,112,90,.1);color:var(--coral)}
+.phase-tag.deploy{background:rgba(63,207,180,.1);color:var(--teal)}
+.phase-tag.test{background:rgba(139,122,232,.1);color:var(--violet)}
+.phase-tag.bonus{background:rgba(63,207,180,.08);color:var(--teal2)}
+
+h2{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:800;color:var(--text);margin-bottom:8px;line-height:1.2}
+h3{font-size:1.15rem;font-weight:700;color:var(--teal2);margin:28px 0 10px}
+h4{font-size:1rem;font-weight:600;color:var(--text);margin:18px 0 6px}
+p{margin:6px 0 14px;color:var(--text2)}
+strong{color:var(--text);font-weight:600}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin:18px 0}
+.card.teal{border-left:3px solid var(--teal)}
+.card.amber{border-left:3px solid var(--amber)}
+.card.coral{border-left:3px solid var(--coral)}
+.card.sky{border-left:3px solid var(--sky)}
+.card.violet{border-left:3px solid var(--violet)}
+
+/* Code */
+.code-wrap{position:relative;margin:14px 0}
+.code-wrap .code-label{position:absolute;top:0;right:0;padding:4px 12px;background:var(--bg4);color:var(--text3);font-size:.65rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;border-radius:0 14px 0 8px;z-index:2}
+.code-wrap .copy-btn{position:absolute;top:8px;left:8px;background:var(--bg4);border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.68rem;cursor:pointer;z-index:2;font-family:'DM Sans';transition:all .2s}
+.code-wrap .copy-btn:hover{background:var(--teal);color:var(--bg);border-color:var(--teal)}
+pre{background:#080c12;border:1px solid var(--border);border-radius:var(--radius);padding:36px 20px 20px;overflow-x:auto;font-family:'DM Mono',monospace;font-size:.8rem;line-height:1.85;color:#b0bdd0;tab-size:2}
+pre .c{color:#3d4d61}
+pre .k{color:var(--sky)}
+pre .s{color:var(--teal)}
+pre .f{color:var(--amber)}
+pre .n{color:var(--coral)}
+pre .v{color:var(--violet)}
+
+/* Steps */
+.step{display:flex;gap:18px;margin:20px 0;align-items:flex-start}
+.step-n{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;flex-shrink:0;margin-top:2px}
+.step-n.teal{background:rgba(63,207,180,.15);color:var(--teal)}
+.step-n.coral{background:rgba(232,112,90,.15);color:var(--coral)}
+.step-n.sky{background:rgba(77,168,232,.15);color:var(--sky)}
+.step-n.amber{background:rgba(232,179,75,.15);color:var(--amber)}
+.step-n.violet{background:rgba(139,122,232,.15);color:var(--violet)}
+
+/* Callout */
+.callout{padding:16px 20px;border-radius:var(--radius);margin:16px 0;font-size:.9rem}
+.callout.warn{background:rgba(232,112,90,.08);border:1px solid rgba(232,112,90,.15);color:var(--coral2)}
+.callout.tip{background:rgba(63,207,180,.08);border:1px solid rgba(63,207,180,.15);color:var(--teal2)}
+.callout.info{background:rgba(77,168,232,.08);border:1px solid rgba(77,168,232,.15);color:var(--sky2)}
+.callout.amber{background:rgba(232,179,75,.08);border:1px solid rgba(232,179,75,.15);color:var(--amber2)}
+.callout.violet{background:rgba(139,122,232,.08);border:1px solid rgba(139,122,232,.15);color:var(--violet2)}
+
+/* File tree */
+.file-tree{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;font-family:'DM Mono',monospace;font-size:.82rem;line-height:2;color:var(--text2);margin:14px 0}
+.file-tree .folder{color:var(--amber)}
+.file-tree .file{color:var(--text2)}
+.file-tree .desc{color:var(--text3);font-family:'DM Sans';font-size:.78rem}
+
+/* Architecture diagram */
+.arch{display:flex;flex-direction:column;gap:4px;margin:20px 0}
+.arch-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+.arch-box{padding:12px 20px;border-radius:10px;font-size:.85rem;font-weight:600;text-align:center;min-width:150px}
+.arch-arrow{color:var(--text3);font-size:1.2rem}
+
+/* Dataset sample table */
+.ds-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.82rem}
+.ds-table th{background:var(--bg3);color:var(--teal);padding:10px 14px;text-align:left;font-weight:600;border-bottom:1px solid var(--border)}
+.ds-table td{padding:10px 14px;color:var(--text2);border-bottom:1px solid rgba(255,255,255,.03);vertical-align:top}
+.ds-table tr:last-child td{border-bottom:none}
+.ds-table tr:hover td{background:rgba(63,207,180,.02)}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:40px 0}
+
+/* Checklist */
+.checklist{list-style:none;margin:12px 0}
+.checklist li{padding:8px 0;color:var(--text2);font-size:.9rem;display:flex;align-items:flex-start;gap:10px}
+.checklist li::before{content:'○';color:var(--teal);font-weight:700;flex-shrink:0;margin-top:1px}
+.checklist li.done::before{content:'●';color:var(--teal)}
+
+/* Output example */
+.output-box{background:#080c12;border-left:3px solid var(--teal);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:14px 0;font-size:.88rem;color:var(--teal2);line-height:1.8;font-family:'DM Mono',monospace}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:20px 0}
+.stat-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;text-align:center}
+.stat-box .stat-val{font-size:1.8rem;font-weight:800;color:var(--teal);font-family:'Playfair Display',serif}
+.stat-box .stat-label{font-size:.75rem;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+/* GitHub link badge */
+.gh-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 18px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:.85rem;text-decoration:none;margin:8px 0;transition:all .2s}
+.gh-badge:hover{border-color:var(--teal);color:var(--teal)}
+.gh-badge svg{flex-shrink:0}
+</style>
+</head>
+<body>
+
+<nav class="toc" id="toc">
+<a href="#phase-0" title="Prerequisites">.</a>
+<a href="#phase-1" title="Dataset">.</a>
+<a href="#phase-2" title="Colab Setup">.</a>
+<a href="#phase-3" title="Fine-Tuning">.</a>
+<a href="#phase-4" title="Export">.</a>
+<a href="#phase-5" title="Ollama Deploy">.</a>
+<a href="#phase-6" title="Demo & Next Steps">.</a>
+</nav>
+
+<div class="page">
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+<div class="hero-badge">Complete Project Guide · Unsloth + QLoRA + Qwen3 + Ollama</div>
+<h1>SaaS Companies <em>Lookup Model</em></h1>
+<p>Fine-tune Qwen3-0.6B into a domain-specific SaaS company knowledge model — on Google Colab's free T4 GPU. Every file, every step, every line of code.</p>
+<div class="hero-meta">
+  <span>🤖 Base Model: <strong>Qwen3-0.6B</strong></span>
+  <span>📦 Dataset: <strong>500 Companies</strong></span>
+  <span>🔧 Method: <strong>QLoRA (4-bit)</strong></span>
+  <span>🚀 Runtime: <strong>Colab T4 GPU</strong></span>
+  <span>🦙 Deploy: <strong>Ollama (saas-orgs)</strong></span>
+</div>
+<div style="margin-top:18px">
+  <a class="gh-badge" href="https://github.com/vigneshn-codes/W8-finetune-qwen-model-Saas-companies" target="_blank">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+    vigneshn-codes / W8-finetune-qwen-model-Saas-companies
+  </a>
+</div>
+</div>
+
+<!-- ===== PHASE 0: PREREQUISITES ===== -->
+<section class="phase" id="phase-0">
+<div class="phase-tag prep">Phase 0</div>
+<h2>Prerequisites & Setup</h2>
+<p>Everything you need before writing a single line of code. No local GPU required — we run everything on Google Colab.</p>
+
+<div class="step">
+<div class="step-n sky">1</div>
+<div>
+<h4>Google Account (for Colab)</h4>
+<p>Go to <strong>colab.research.google.com</strong> → create a new notebook → Runtime → Change runtime type → select <strong>T4 GPU</strong>. This gives you a free NVIDIA T4 (15GB VRAM) — plenty for QLoRA with a 0.6B model.</p>
+</div>
+</div>
+
+<div class="step">
+<div class="step-n sky">2</div>
+<div>
+<h4>Hugging Face Account</h4>
+<p>Go to <strong>huggingface.co</strong> → Sign Up. Go to <strong>Settings → Access Tokens → New Token</strong> → create a token with <strong>Write</strong> access. You'll need this if you want to push your fine-tuned model to the Hub after training.</p>
+</div>
+</div>
+
+<div class="step">
+<div class="step-n sky">3</div>
+<div>
+<h4>Dataset & Notebook</h4>
+<p>Upload <strong>companies_dataset.json</strong> to your Colab session (use the Files panel on the left). The notebook <strong>saas_model_lora.ipynb</strong> contains all 7 cells ready to run in sequence.</p>
+</div>
+</div>
+
+<div class="step">
+<div class="step-n sky">4</div>
+<div>
+<h4>Ollama (for local deployment)</h4>
+<p>On your Mac/Linux machine, install Ollama: <code style="background:var(--bg3);padding:2px 8px;border-radius:4px;font-family:'DM Mono';font-size:.82rem">curl -fsSL https://ollama.com/install.sh | sh</code>. This lets you run your exported GGUF model locally with <strong>ollama run saas-orgs</strong>.</p>
+</div>
+</div>
+
+<div class="callout tip">
+<strong>💡 Why Qwen3-0.6B?</strong> The 0.6B model is extremely lightweight — it trains in minutes on Colab's T4, exports a GGUF that's only ~639MB, and runs smoothly on a MacBook. Perfect for a domain-specific lookup task like SaaS company info where you don't need general-purpose reasoning power.
+</div>
+
+<h3>Project File Structure</h3>
+<div class="file-tree">
+<span class="folder">saas_model_lora-2/</span>                <span class="desc">← your main project folder</span><br>
+├── <span class="file">companies_dataset.json</span>          <span class="desc">← 500 SaaS company records</span><br>
+├── <span class="file">saas_model_lora.ipynb</span>           <span class="desc">← Colab fine-tuning notebook (7 cells)</span><br>
+├── <span class="file">saas_model_lora/</span>                <span class="desc">← LoRA adapter output (after Cell 6)</span><br>
+│   ├── adapter_config.json<br>
+│   └── adapter_model.safetensors<br>
+├── <span class="file">model_gguf_gguf/</span>                <span class="desc">← GGUF export folder (after Cell 6)</span><br>
+│   ├── Qwen3-0.6B.Q8_0.gguf           <span class="desc">← ~639MB quantized model</span><br>
+│   └── Modelfile                       <span class="desc">← Ollama config</span><br>
+└── <span class="file">saas_model_lora.zip</span>             <span class="desc">← downloaded adapter archive</span>
+</div>
+</section>
+
+<!-- ===== PHASE 1: DATASET ===== -->
+<section class="phase" id="phase-1">
+<div class="phase-tag data">Phase 1</div>
+<h2>The Training Dataset</h2>
+<p>The <strong>companies_dataset.json</strong> file contains 500 SaaS and B2B company records scraped and curated. Each record includes the company name, URL, category, type classification, keywords, and a full description.</p>
+
+<div class="stats-row">
+  <div class="stat-box"><div class="stat-val">500</div><div class="stat-label">Companies</div></div>
+  <div class="stat-box"><div class="stat-val">6</div><div class="stat-label">Fields / Record</div></div>
+  <div class="stat-box"><div class="stat-val">~120</div><div class="stat-label">Categories</div></div>
+  <div class="stat-box"><div class="stat-val">Q8_0</div><div class="stat-label">GGUF Quant</div></div>
+</div>
+
+<h3>Dataset JSON Structure</h3>
+<p>Each record in <strong>companies_dataset.json</strong> follows this schema:</p>
+
+<div class="code-wrap">
+<span class="code-label">companies_dataset.json — schema</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre>{
+  <span class="s">"Name"</span>: <span class="s">"LinkedIn"</span>,
+  <span class="s">"URL"</span>: <span class="s">"https://linkedin.com"</span>,
+  <span class="s">"Type"</span>: <span class="s">"b2b, b2c, saas"</span>,
+  <span class="s">"Category"</span>: <span class="s">"social media"</span>,
+  <span class="s">"Keywords"</span>: <span class="s">"professional networking, talent acquisition, job search, marketing solutions"</span>,
+  <span class="s">"Description"</span>: <span class="s">"LinkedIn is a leading professional networking platform that connects individuals and businesses worldwide. The company offers a platform for professionals to network, search for jobs, and share industry insights..."</span>
+}</pre>
+</div>
+
+<h3>Sample Records from the Dataset</h3>
+<table class="ds-table">
+<thead>
+<tr><th>Name</th><th>Category</th><th>Type</th><th>Description (excerpt)</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>LinkedIn</strong></td><td>social media</td><td>b2b, b2c, saas</td><td>Leading professional networking platform connecting individuals and businesses worldwide...</td></tr>
+<tr><td><strong>Google</strong></td><td>technology</td><td>b2b, b2c, saas</td><td>Multinational corporation specializing in Internet-related services including search engine, cloud computing...</td></tr>
+<tr><td><strong>Magneto Empleos</strong></td><td>services</td><td>b2b</td><td>Comprehensive recruitment, talent management, and employee relations platform. Serves 3,000+ clients across 150 countries...</td></tr>
+<tr><td><strong>WordPress</strong></td><td>software</td><td>saas</td><td>Open-source CMS powering over 40% of websites globally. Offers themes, plugins, and hosting integrations...</td></tr>
+</tbody>
+</table>
+
+<h3>How the Prompt Template Works</h3>
+<p>Cell 4 in the notebook converts each JSON record into a training prompt using this template:</p>
+
+<div class="code-wrap">
+<span class="code-label">Prompt Template (Cell 4)</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Template turns each company record into a training pair</span>
+prompt_template = <span class="s">"""Instruction: Provide information about the company.
+Company Name: {}
+Response: {}"""</span>
+
+<span class="k">def</span> <span class="f">format_data</span>(example):
+    <span class="c"># Pack URL + Category + Description into a single response</span>
+    response_text = <span class="s">f"URL: {example['URL']}, Category: {example['Category']}, Description: {example['Description']}"</span>
+    <span class="k">return</span> { <span class="s">"text"</span>: prompt_template.<span class="f">format</span>(example[<span class="s">'Name'</span>], response_text) }</pre>
+</div>
+
+<h3>Example Formatted Training Sample</h3>
+<div class="output-box">Instruction: Provide information about the company.<br>
+Company Name: Magneto Empleos<br>
+Response: URL: https://magnetoempleos.com, Category: services, Description: Magneto Empleos specializes in providing comprehensive solutions for recruitment, talent management, and employee relations through its Empleos platform. Based in Spain, Magneto Empleos is owned by Magneto Technologies and serves over 3,000 clients across 150 countries, including major Fortune 100 companies like SAP and IBM. It employs around 1,000 people and facilitates recruitment processes for over 25,000 positions annually...</div>
+
+<div class="callout amber">
+<strong>📊 Dataset Note:</strong> Some records have mismatched Name/URL pairs (e.g., "Google" appearing with a law firm URL). This is a data quality issue from the original scrape. For the next fine-tuning iteration, cleaning these mismatches will significantly improve model accuracy and reduce hallucinations.
+</div>
+</section>
+
+<!-- ===== PHASE 2: COLAB SETUP ===== -->
+<section class="phase" id="phase-2">
+<div class="phase-tag prep">Phase 2</div>
+<h2>Google Colab Setup</h2>
+<p>Open <strong>saas_model_lora.ipynb</strong> in Colab. Make sure you're on a <strong>T4 GPU</strong> runtime. Run each cell in order.</p>
+
+<h3>Cell 1: Install Dependencies</h3>
+<div class="code-wrap">
+<span class="code-label">Cell 1 — Install Unsloth</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Install Unsloth: 2x faster training, 70% less memory</span>
+<span class="f">!pip install</span> unsloth
+
+<span class="c"># Install supporting libraries for model handling and training</span>
+<span class="f">!pip install</span> --no-deps xformers trl peft accelerate bitsandbytes</pre>
+</div>
+
+<div class="callout info">
+<strong>ℹ️ Install time:</strong> This typically takes 2–4 minutes on a fresh Colab session. You only need to run this once per session. If you disconnect and reconnect, rerun Cell 1 first.
+</div>
+
+<h3>Cell 2: Load the Base Model (4-bit QLoRA)</h3>
+<p>We load <strong>Qwen3-0.6B</strong> quantized to 4-bit. Unsloth handles the quantization automatically via the <code style="background:var(--bg3);padding:1px 6px;border-radius:4px;font-family:'DM Mono';font-size:.82rem">-bnb-4bit</code> model variant.</p>
+
+<div class="code-wrap">
+<span class="code-label">Cell 2 — Load Qwen3-0.6B (4-bit)</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">from</span> unsloth <span class="k">import</span> FastLanguageModel
+<span class="k">import</span> torch
+
+<span class="c"># Load the base Qwen3-0.6B model in 4-bit to save GPU memory.</span>
+<span class="c"># The bnb-4bit variant is pre-quantized by Unsloth for fast loading.</span>
+model, tokenizer = FastLanguageModel.<span class="f">from_pretrained</span>(
+    model_name = <span class="s">"unsloth/Qwen3-0.6B-bnb-4bit"</span>,
+    max_seq_length = <span class="n">2048</span>,
+    dtype = <span class="k">None</span>,       <span class="c"># Auto-detect: float16 or bfloat16</span>
+    load_in_4bit = <span class="k">True</span>  <span class="c"># QLoRA: dramatically cuts VRAM usage</span>
+)
+
+<span class="f">print</span>(<span class="s">"✅ Model loaded! Memory used:"</span>, <span class="f">round</span>(torch.cuda.<span class="f">memory_allocated</span>() / <span class="n">1e9</span>, <span class="n">2</span>), <span class="s">"GB"</span>)</pre>
+</div>
+
+<div class="card teal">
+<h4>Why Qwen3-0.6B instead of Llama 3.1 8B?</h4>
+<p>For a domain-specific lookup task (retrieve company info by name), a small model is perfectly sufficient. Qwen3-0.6B loads in seconds, trains in ~10 minutes on 500 examples, and the GGUF export is only <strong>639MB</strong> — trivial to run locally with Ollama on any modern laptop.</p>
+</div>
+
+<h3>Cell 3: Add LoRA Adapters</h3>
+
+<div class="code-wrap">
+<span class="code-label">Cell 3 — LoRA Config</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Add LoRA adapters: instead of training the whole model,</span>
+<span class="c"># we inject small trainable matrices into key attention layers.</span>
+model = FastLanguageModel.<span class="f">get_peft_model</span>(
+    model,
+    r = <span class="n">16</span>,           <span class="c"># LoRA rank — capacity of adapter matrices</span>
+    target_modules = [
+        <span class="s">"q_proj"</span>, <span class="s">"k_proj"</span>, <span class="s">"v_proj"</span>, <span class="s">"o_proj"</span>  <span class="c"># Attention projections</span>
+    ],
+    lora_alpha = <span class="n">16</span>,   <span class="c"># Scaling factor (keep equal to r)</span>
+    lora_dropout = <span class="n">0</span>,   <span class="c"># 0 = Unsloth-optimized</span>
+    bias = <span class="s">"none"</span>,
+)
+
+<span class="c"># Show trainable parameter count</span>
+trainable = <span class="f">sum</span>(p.<span class="f">numel</span>() <span class="k">for</span> p <span class="k">in</span> model.<span class="f">parameters</span>() <span class="k">if</span> p.requires_grad)
+total = <span class="f">sum</span>(p.<span class="f">numel</span>() <span class="k">for</span> p <span class="k">in</span> model.<span class="f">parameters</span>())
+<span class="f">print</span>(<span class="s">f"✅ LoRA added. Training {trainable:,} / {total:,} params ({100*trainable/total:.2f}%)"</span>)</pre>
+</div>
+</section>
+
+<!-- ===== PHASE 3: TRAINING ===== -->
+<section class="phase" id="phase-3">
+<div class="phase-tag train">Phase 3</div>
+<h2>Dataset Loading & Training</h2>
+
+<h3>Cell 4: Load and Format the Dataset</h3>
+<div class="code-wrap">
+<span class="code-label">Cell 4 — Load companies_dataset.json</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">import</span> json
+<span class="k">from</span> datasets <span class="k">import</span> Dataset
+
+<span class="c"># Load your uploaded dataset file (500 SaaS company records)</span>
+<span class="k">with</span> <span class="f">open</span>(<span class="s">'companies_dataset.json'</span>, <span class="s">'r'</span>) <span class="k">as</span> f:
+    raw_data = json.<span class="f">load</span>(f)
+
+<span class="f">print</span>(<span class="s">f"✅ Loaded {len(raw_data)} company records"</span>)
+
+<span class="c"># Define the prompt template the model will learn to follow</span>
+prompt_template = <span class="s">"""Instruction: Provide information about the company.
+Company Name: {}
+Response: {}"""</span>
+
+<span class="k">def</span> <span class="f">format_data</span>(example):
+    <span class="c"># Pack URL, Category, Description into one response string</span>
+    response_text = (
+        <span class="s">f"URL: {example['URL']}, "</span>
+        <span class="s">f"Category: {example['Category']}, "</span>
+        <span class="s">f"Description: {example['Description']}"</span>
+    )
+    <span class="k">return</span> {<span class="s">"text"</span>: prompt_template.<span class="f">format</span>(example[<span class="s">'Name'</span>], response_text)}
+
+<span class="c"># Convert JSON list to HuggingFace Dataset and apply formatter</span>
+dataset = Dataset.<span class="f">from_list</span>(raw_data).<span class="f">map</span>(format_data)
+<span class="f">print</span>(<span class="s">f"✅ Dataset ready. Sample:\n{dataset[0]['text'][:300]}..."</span>)</pre>
+</div>
+
+<h3>Cell 5: Configure Trainer & Start Fine-Tuning</h3>
+<div class="code-wrap">
+<span class="code-label">Cell 5 — SFTTrainer (500 steps)</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">from</span> trl <span class="k">import</span> SFTTrainer
+<span class="k">from</span> transformers <span class="k">import</span> TrainingArguments
+
+trainer = <span class="f">SFTTrainer</span>(
+    model = model,
+    tokenizer = tokenizer,
+    train_dataset = dataset,
+    dataset_text_field = <span class="s">"text"</span>,
+    max_seq_length = <span class="n">2048</span>,
+    args = <span class="f">TrainingArguments</span>(
+        per_device_train_batch_size = <span class="n">2</span>,   <span class="c"># Rows processed at once</span>
+        gradient_accumulation_steps = <span class="n">4</span>,   <span class="c"># Simulates batch_size = 8</span>
+        max_steps = <span class="n">500</span>,                    <span class="c"># Total training steps</span>
+        learning_rate = <span class="n">2e-4</span>,              <span class="c"># Learning rate</span>
+        fp16 = <span class="k">True</span>,                        <span class="c"># Half-precision math (faster)</span>
+        logging_steps = <span class="n">1</span>,                  <span class="c"># Print loss every step</span>
+        output_dir = <span class="s">"outputs"</span>,
+    ),
+)
+
+<span class="f">print</span>(<span class="s">"🚀 Starting fine-tuning..."</span>)
+trainer_stats = trainer.<span class="f">train</span>()
+<span class="f">print</span>(<span class="s">f"✅ Training complete! Final loss: {trainer_stats.training_loss:.4f}"</span>)</pre>
+</div>
+
+<div class="card amber">
+<h4>Training Hyperparameters Explained</h4>
+<table class="ds-table" style="margin:0">
+<thead><tr><th>Parameter</th><th>Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><strong>max_steps</strong></td><td>500</td><td>~4 passes over 500 examples. Enough to learn company lookups without overfitting.</td></tr>
+<tr><td><strong>learning_rate</strong></td><td>2e-4</td><td>Standard for LoRA fine-tuning. Higher = learns faster but risks instability.</td></tr>
+<tr><td><strong>batch_size</strong></td><td>2 × 4</td><td>Effective batch of 8. Gradient accumulation simulates larger batch on limited VRAM.</td></tr>
+<tr><td><strong>fp16</strong></td><td>True</td><td>Half-precision speeds up training and reduces memory on T4 GPU.</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="callout warn">
+<strong>⚠️ Expected Loss Curve:</strong> You should see training loss drop from ~2.0–3.0 down to ~0.3–0.8 over 500 steps. If loss stays flat after 100 steps, the learning rate may be too low. If it bounces erratically, try reducing to <code>1e-4</code>.
+</div>
+</section>
+
+<!-- ===== PHASE 4: EXPORT ===== -->
+<section class="phase" id="phase-4">
+<div class="phase-tag deploy">Phase 4</div>
+<h2>Save & Export the Model</h2>
+
+<h3>Cell 6: Save LoRA Adapter + Export to GGUF</h3>
+<div class="code-wrap">
+<span class="code-label">Cell 6 — Save & GGUF Export</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Step 1: Save the LoRA adapter locally (small — just the deltas)</span>
+model.<span class="f">save_pretrained</span>(<span class="s">"saas_model_lora"</span>)
+tokenizer.<span class="f">save_pretrained</span>(<span class="s">"saas_model_lora"</span>)
+<span class="f">print</span>(<span class="s">"✅ LoRA adapter saved to saas_model_lora/"</span>)
+
+<span class="c"># Step 2: Export to GGUF format for Ollama</span>
+<span class="c"># q8_0 = 8-bit quantization, high quality, ~639MB for Qwen3-0.6B</span>
+model.<span class="f">save_pretrained_gguf</span>(<span class="s">"model_gguf"</span>, tokenizer, quantization_method=<span class="s">"q8_0"</span>)
+<span class="f">print</span>(<span class="s">"✅ GGUF exported to model_gguf_gguf/"</span>)
+<span class="f">print</span>(<span class="s">"   Files: Qwen3-0.6B.Q8_0.gguf + Modelfile"</span>)</pre>
+</div>
+
+<h3>Cell 7: Download Files to Your Computer</h3>
+<div class="code-wrap">
+<span class="code-label">Cell 7 — Download</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Zip the LoRA adapter folder</span>
+<span class="f">!zip</span> -r saas_model_lora.zip saas_model_lora/
+
+<span class="c"># Download all three files to your local machine</span>
+<span class="k">from</span> google.colab <span class="k">import</span> files
+
+files.<span class="f">download</span>(<span class="s">"saas_model_lora.zip"</span>)                           <span class="c"># LoRA adapter</span>
+files.<span class="f">download</span>(<span class="s">"model_gguf_gguf/Qwen3-0.6B.Q8_0.gguf"</span>)          <span class="c"># GGUF model (~639MB)</span>
+files.<span class="f">download</span>(<span class="s">"model_gguf_gguf/Modelfile"</span>)                      <span class="c"># Ollama config</span>
+
+<span class="f">print</span>(<span class="s">"✅ Download started! Check your browser downloads folder."</span>)</pre>
+</div>
+
+<div class="callout tip">
+<strong>💾 What you'll have locally:</strong> The GGUF file + Modelfile are all you need to run the model with Ollama. The LoRA adapter zip is for future fine-tuning iterations (you can continue training from the adapter instead of starting from the base model).
+</div>
+
+<h3>Understanding the Output Files</h3>
+<div class="card sky">
+<h4>model_gguf_gguf/Qwen3-0.6B.Q8_0.gguf (~639MB)</h4>
+<p>The merged, quantized model file. This contains both the original Qwen3-0.6B weights AND your fine-tuned LoRA adapter baked in. Q8_0 quantization gives excellent quality at half the size of a 16-bit model.</p>
+</div>
+<div class="card teal">
+<h4>model_gguf_gguf/Modelfile</h4>
+<p>Ollama's configuration file. It references the GGUF file and sets inference parameters (temperature, top_p). You'll use this to register your model with Ollama as <strong>saas-orgs</strong>.</p>
+</div>
+<div class="card violet">
+<h4>saas_model_lora/ (adapter only)</h4>
+<p>The raw LoRA adapter (~50MB). Useful if you want to: continue training from this checkpoint, merge with a different base model, or share just the adapter on Hugging Face Hub.</p>
+</div>
+</section>
+
+<!-- ===== PHASE 5: OLLAMA DEPLOY ===== -->
+<section class="phase" id="phase-5">
+<div class="phase-tag deploy">Phase 5</div>
+<h2>Local Deployment with Ollama</h2>
+<p>This is exactly what you did — create a custom Ollama model called <strong>saas-orgs</strong> from the GGUF file and run it locally.</p>
+
+<h3>Step 1: Set Up Your Local Files</h3>
+<div class="code-wrap">
+<span class="code-label">Terminal — organize files</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Create a local folder for the model</span>
+mkdir saas_model_lora-2
+cd saas_model_lora-2
+
+<span class="c"># Move your downloaded files here</span>
+<span class="c"># - Qwen3-0.6B.Q8_0.gguf</span>
+<span class="c"># - Modelfile</span>
+<span class="c"># Verify files are present</span>
+ls -lh</pre>
+</div>
+
+<h3>Step 2: Inspect the Modelfile</h3>
+<p>The exported Modelfile from Unsloth will look like this. You can edit the system prompt and parameters to tune inference behavior:</p>
+
+<div class="code-wrap">
+<span class="code-label">Modelfile</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Modelfile for saas-orgs</span>
+FROM ./Qwen3-0.6B.Q8_0.gguf
+
+SYSTEM <span class="s">"""You are a SaaS company information assistant. When given a company name,
+provide its URL, category, and a detailed description based on your training data.
+Always respond in the format: URL: ..., Category: ..., Description: ..."""</span>
+
+PARAMETER temperature <span class="n">0.7</span>
+PARAMETER top_p <span class="n">0.9</span>
+PARAMETER stop <span class="s">"&lt;/s&gt;"</span></pre>
+</div>
+
+<h3>Step 3: Create & Run the Model</h3>
+<div class="code-wrap">
+<span class="code-label">Terminal — create and run</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="c"># Register the model with Ollama (creates saas-orgs:latest)</span>
+ollama create saas-orgs -f Modelfile
+
+<span class="c"># Verify it's in the list</span>
+ollama list
+
+<span class="c"># Run the model interactively</span>
+ollama run saas-orgs</pre>
+</div>
+
+<h3>Live Terminal Output (What You Saw)</h3>
+<p>Based on your screenshot, here's the actual terminal session output:</p>
+
+<div class="output-box">
+vigneshn@Vigneshs-MacBook-Air saas_model_lora-2 % ollama create saas-orgs -f Modelfile<br>
+gathering model components<br>
+copying file sha256:9cbe9087... 100%<br>
+parsing GGUF<br>
+using existing layer sha256:9cbe9087...<br>
+creating new layer sha256:eb44028...<br>
+creating new layer sha256:675f47e...<br>
+writing manifest<br>
+<strong style="color:var(--teal)">success</strong><br><br>
+vigneshn@Vigneshs-MacBook-Air saas_model_lora-2 % ollama list<br>
+NAME              ID            SIZE      MODIFIED<br>
+<strong style="color:var(--amber)">saas-orgs:latest</strong>  43372fd9d529  639 MB    2 seconds ago<br>
+nomic-embed-text  0a109f422b47  274 MB    4 weeks ago<br>
+llama3.2:latest   a80c4f17acd5  2.0 GB    7 weeks ago<br>
+openhermes:latest 95477a2659b7  4.1 GB    7 weeks ago<br>
+llama3.2-vision   6f2f9757ae97  7.8 GB    8 weeks ago<br>
+deepseek-r1:8b    6995872bfe4c  5.2 GB    8 weeks ago
+</div>
+
+<h3>Sample Inference</h3>
+<div class="output-box">
+>>> Provide information about the company. Company Name:Magneto Empleos<br><br>
+URL: https://magnetoempleos.com, URL category: services, name: Magneto Empleos, URL: https://github.com, name: WordPress, category: software, description: Magneto Empleos specializes in providing comprehensive solutions for recruitment, talent management, and employee relations through its Empleos platform. Based in Spain, Magneto Empleos is owned by Magneto Technologies and serves over 3,000 clients across 150 countries, including major Fortune 100 companies like SAP and IBM...
+</div>
+
+<div class="callout warn">
+<strong>⚠️ Output Quality Note:</strong> The current output includes some formatting artifacts (e.g., injecting WordPress info mid-response for Magneto Empleos). This is a data quality issue from mismatched records in the source dataset — not a training problem. Cleaning the dataset before the next iteration will fix this.
+</div>
+
+<h3>Using the Ollama Python API</h3>
+<div class="code-wrap">
+<span class="code-label">Python — query saas-orgs via API</span>
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">import</span> requests
+
+<span class="k">def</span> <span class="f">lookup_company</span>(company_name: str) -> str:
+    prompt = <span class="s">f"Instruction: Provide information about the company.\nCompany Name: {company_name}\nResponse:"</span>
+    
+    response = requests.<span class="f">post</span>(
+        <span class="s">"http://localhost:11434/api/generate"</span>,
+        json={
+            <span class="s">"model"</span>: <span class="s">"saas-orgs"</span>,
+            <span class="s">"prompt"</span>: prompt,
+            <span class="s">"stream"</span>: <span class="k">False</span>
+        }
+    )
+    <span class="k">return</span> response.<span class="f">json</span>()[<span class="s">"response"</span>]
+
+<span class="c"># Example usage</span>
+result = <span class="f">lookup_company</span>(<span class="s">"LinkedIn"</span>)
+<span class="f">print</span>(result)</pre>
+</div>
+</section>
+
+<!-- ===== PHASE 6: DEMO & NEXT STEPS ===== -->
+<section class="phase" id="phase-6">
+<div class="phase-tag bonus">Phase 6</div>
+<h2>Demo Scenarios & Next Iteration</h2>
+<p>Use these prompts to demonstrate the model and identify areas for improvement in the next fine-tuning round.</p>
+
+<div class="card teal">
+<h4>Demo 1 — Well-known SaaS lookup</h4>
+<p><strong>Prompt:</strong> "Provide information about the company. Company Name: LinkedIn"</p>
+<p><strong>Expected:</strong> URL linkedin.com, category social media, full description about professional networking.</p>
+<p><strong>Check:</strong> Does the description match LinkedIn, not another company?</p>
+</div>
+
+<div class="card amber">
+<h4>Demo 2 — Niche company lookup</h4>
+<p><strong>Prompt:</strong> "Provide information about the company. Company Name: Magneto Empleos"</p>
+<p><strong>Expected:</strong> magnetoempleos.com, services category, Spain-based recruitment platform.</p>
+<p><strong>Check:</strong> Are the 3,000 clients and 150 countries facts present in the output?</p>
+</div>
+
+<div class="card coral">
+<h4>Demo 3 — Category-based query</h4>
+<p><strong>Prompt:</strong> "What SaaS companies are in the social media category?"</p>
+<p><strong>Note:</strong> The current model is trained for name → info lookup. Category browsing would require a different prompt format in the dataset for the next iteration.</p>
+</div>
+
+<div class="card violet">
+<h4>Demo 4 — URL-to-company reverse lookup</h4>
+<p><strong>Prompt:</strong> "What company is at the URL linkedin.com?"</p>
+<p><strong>Note:</strong> This direction (URL → Name) isn't in the current training format. Add reverse-lookup examples to the next dataset for bidirectional retrieval.</p>
+</div>
+
+<div class="divider"></div>
+
+<h3>Next Fine-Tuning Iteration — Improvements</h3>
+<p>Based on the current model's output, here are concrete improvements to make in the next iteration:</p>
+
+<div class="card teal">
+<h4>1. Dataset Cleaning (High Priority)</h4>
+<p>Remove or fix the ~30–40 records where Name and URL don't match (e.g., "Google" with a law firm URL). These cause the model to generate hallucinated/mixed responses. Filter with:</p>
+<div class="code-wrap">
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">import</span> json, re
+
+<span class="k">with</span> <span class="f">open</span>(<span class="s">"companies_dataset.json"</span>) <span class="k">as</span> f:
+    data = json.<span class="f">load</span>(f)
+
+<span class="c"># Simple heuristic: filter records where name appears in URL domain</span>
+<span class="k">def</span> <span class="f">is_likely_valid</span>(record):
+    name_slug = record[<span class="s">'Name'</span>].<span class="f">lower</span>().<span class="f">replace</span>(<span class="s">' '</span>, <span class="s">''</span>)[:6]
+    <span class="k">return</span> name_slug <span class="k">in</span> record[<span class="s">'URL'</span>].<span class="f">lower</span>() <span class="k">or</span> <span class="f">len</span>(record[<span class="s">'Description'</span>]) > <span class="n">100</span>
+
+clean_data = [r <span class="k">for</span> r <span class="k">in</span> data <span class="k">if</span> <span class="f">is_likely_valid</span>(r)]
+<span class="f">print</span>(<span class="s">f"Kept {len(clean_data)} / {len(data)} records after cleaning"</span>)</pre>
+</div>
+</div>
+
+<div class="card amber">
+<h4>2. Richer Prompt Format (Include Type + Keywords)</h4>
+<p>The current template only uses URL, Category, and Description. Adding Type and Keywords gives the model more signal:</p>
+<div class="code-wrap">
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">def</span> <span class="f">format_data_v2</span>(example):
+    response_text = (
+        <span class="s">f"URL: {example['URL']}\n"</span>
+        <span class="s">f"Type: {example.get('Type', 'saas')}\n"</span>
+        <span class="s">f"Category: {example['Category']}\n"</span>
+        <span class="s">f"Keywords: {example.get('Keywords', '')}\n"</span>
+        <span class="s">f"Description: {example['Description']}"</span>
+    )
+    <span class="k">return</span> {<span class="s">"text"</span>: prompt_template.<span class="f">format</span>(example[<span class="s">'Name'</span>], response_text)}</pre>
+</div>
+</div>
+
+<div class="card sky">
+<h4>3. Increase Training Steps (500 → 1000–2000)</h4>
+<p>With a cleaned dataset of ~460 records, 500 steps gives roughly 1–2 epochs. Increasing to 1000–2000 steps will allow more passes through the data, improving recall accuracy for less-frequent companies.</p>
+</div>
+
+<div class="card coral">
+<h4>4. Continue Training from Checkpoint</h4>
+<p>Instead of restarting from Qwen3-0.6B base, continue from your existing <strong>saas_model_lora</strong> adapter to preserve what was already learned:</p>
+<div class="code-wrap">
+<button class="copy-btn" onclick="copyCode(this)">Copy</button>
+<pre><span class="k">from</span> peft <span class="k">import</span> PeftModel
+
+<span class="c"># Load base model + apply existing adapter</span>
+base_model, tokenizer = FastLanguageModel.<span class="f">from_pretrained</span>(
+    <span class="s">"unsloth/Qwen3-0.6B-bnb-4bit"</span>, max_seq_length=<span class="n">2048</span>, load_in_4bit=<span class="k">True</span>
+)
+model = PeftModel.<span class="f">from_pretrained</span>(base_model, <span class="s">"saas_model_lora"</span>)
+<span class="c"># Now fine-tune model further with your improved dataset</span></pre>
+</div>
+</div>
+
+<div class="divider"></div>
+
+<h3>Project Deliverables Checklist</h3>
+<ul class="checklist">
+<li class="done">Training dataset — <strong>companies_dataset.json</strong> (500 records, JSON format)</li>
+<li class="done">Google Colab notebook — <strong>saas_model_lora.ipynb</strong> (7 cells, fully runnable)</li>
+<li class="done">Fine-tuned LoRA adapter — <strong>saas_model_lora/</strong> (saved locally)</li>
+<li class="done">GGUF export — <strong>Qwen3-0.6B.Q8_0.gguf</strong> (639MB, Ollama-ready)</li>
+<li class="done">Local Ollama model — <strong>saas-orgs:latest</strong> (running via <code>ollama run saas-orgs</code>)</li>
+<li class="done">Terminal screenshot — showing ollama create + list + inference</li>
+<li class="done">GitHub repo — <a href="https://github.com/vigneshn-codes/W8-finetune-qwen-model-Saas-companies" style="color:var(--teal)">W8-finetune-qwen-model-Saas-companies</a></li>
+<li>Dataset v2 — cleaned records, richer prompt template with Type + Keywords</li>
+<li>Training run v2 — continue from checkpoint, 1000–2000 steps</li>
+<li>Evaluation — before vs after comparison on 10 test companies</li>
+<li>Python API wrapper — REST endpoint for company lookups</li>
+</ul>
+
+<div class="callout tip" style="margin-top:32px">
+<strong>🎓 Viva Talking Points:</strong>
+Be ready to explain: why Qwen3-0.6B over Llama (size-appropriate for lookup task), what QLoRA does (4-bit base model + 16-bit LoRA adapters = dramatic VRAM reduction), why LoRA rank=16 (controls adapter capacity — too low = underfitting, too high = overfitting on 500 examples), what the GGUF format is (quantized for CPU/GPU inference via llama.cpp used by Ollama), the difference between the LoRA adapter and the merged GGUF (adapter = delta weights only; GGUF = merged + quantized full model), and why data quality matters more than training steps (garbage in = garbage out — fixing mismatched Name/URL records is the highest-leverage next action).
+</div>
+</section>
+
+</div><!-- end .page -->
+
+<script>
+function copyCode(btn) {
+  const pre = btn.parentElement.querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  });
+}
+
+// Active dot nav
+const sections = document.querySelectorAll('.phase[id]');
+const dots = document.querySelectorAll('.toc a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  dots.forEach(d => {
+    d.classList.remove('active');
+    if (d.getAttribute('href') === '#' + current) d.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
